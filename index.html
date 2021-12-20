@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="css/style.css">
+
+	<script type="module" async src="js/controller.js"></script>
+	<title>Stores management platform</title>
+</head>
+<body>
+	<aside class="stores-list__block">
+		<header class="header-stores-list">
+			<h2 class="block-title">Stores list</h2>
+			<div class="search-panel">
+				<input id="store-search-input" type="text" class="store-search-input" placeholder="Search">
+				<div class="wrapper-search-actions">
+					<button id="btn-search" class="btn btn-search" title="Search"></button>
+					<button id="btn-clear" class="btn btn-clear" title="Clear"></button>
+				</div>
+			</div>
+		</header>
+		<ul class="stores-list" id="stores-list">
+		</ul>
+
+		<div class="background-block" id="background-block"></div>
+		<div class="create-menu" id="create-store-menu">
+			<div class="create-menu-block store-create">
+				<h2 class="create-title">Create new store</h2>
+				<form class="create-menu-form">
+					<ul class="fields-list">
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Name</span>
+							</div>
+							<div id="input-wrapper-store-menu" class="input-wrapper">
+								<input id="input-store-name" name="Name" type="text" class="input-field store-menu" placeholder="Enter name">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Email:</span>
+							</div>
+							<div id="input-wrapper-store-menu" class="input-wrapper">
+								<input id="input-store-email" name="Email" type="email" class="input-field store-menu" placeholder="Enter email">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Phone Number:</span>
+							</div>
+							<div id="input-wrapper-store-menu" class="input-wrapper">
+								<input id="input-store-phone" name="Phone" type="tel" class="input-field store-menu" placeholder="Enter phone number (7 numbers)">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Address:</span>
+							</div>
+							<div id="input-wrapper-store-menu" class="input-wrapper">
+								<input id="input-store-address" name="Address" type="text" class="input-field store-menu" placeholder="Enter address">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Established:</span>
+							</div>
+							<div id="input-wrapper-store-menu" class="input-wrapper">
+								<input id="input-store-date" name="Date" type="date" class="input-field store-menu">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Floor Area:</span>
+							</div>
+							<div id="input-wrapper-store-menu" class="input-wrapper">
+								<input id="input-store-floor" name="Floor" type="text" class="input-field store-menu" placeholder="Enter floor area (in sq.m.)">
+							</div>
+						</li>
+					</ul>
+					<div class="field-perform-action">
+						<button id="btn-create-new-store" class="btn-create btn-create-new-store">
+							<span>Create</span>
+						</button>
+						<button type="submit" class="btn-create btn-cancel-new-store" id="btn-cancel-new-store">
+							<span>Cancel</span>
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<footer class="sticky">
+			<button class="btn-create" id="btn-create">
+				<div class="plus-create">
+				<span>Create</span>
+			</button>
+		</footer>
+	</aside>
+
+	<main id="page-stub" class="page-stub">
+		<header class="header-stub">
+			Store is not selected
+		</header>
+		<section class="not-selected-store-info">
+			<img src="img/emptyPage.png" alt="Store is not selected" class="img-not-selected-store">
+		</section>
+	</main>
+
+	<div id="store-details-block" class="store-details-block hide">
+		<header class="header-details-block">
+			<h2 class="block-title right">Stores details</h2>
+			<address class="store-contacts">
+				<div class="store-contact-item">
+					<span id="store-contact-email" class="store-contact-email">
+						Email: ...
+					</span>
+					<span id="store-contact-phone" class="store-contact-phone">
+						Phone Number: ...
+					</span>
+					<span id="store-contact-address" class="store-contact-address">
+						Address: ...
+					</span>
+				</div>
+				<div class="store-contact-item">
+					<span id="store-contact-date" class="store-contact-date">
+						Established Date: ...
+					</span>
+					<span id="store-contact-area" class="store-contact-area">
+						Floor Area: ...
+					</span>					
+				</div>
+			</address>
+			<div class="product-statuses-bar">
+				<div class="highlighter-product-quantity-all">
+					<div class="product-quantity-all">
+						<span id="all-quantity">...</span> all
+					</div>
+				</div>
+				<div id="ok-icon" class="status-icon ok-icon highlighter-product-hide">
+					<div id="ok-quantity" class="products-quantity ok-quantity">...</div>
+					<div class="products-status">Ok</div>
+				</div>
+				<div id="storage-icon" class="status-icon storage-icon highlighter-product-hide">
+					<div id="storage-quantity" class="products-quantity storage-quantity">...</div>
+					<div class="products-status">Storage</div>
+				</div>
+				<div id="sold-icon" class="status-icon sold-icon highlighter-product-hide">
+					<div id="sold-quantity" class="products-quantity sold-quantity">...</div>
+					<div class="products-status">Out of stock</div>
+				</div>
+			</div>
+		</header>
+		</section>
+		<section class="product-records">
+			<table class="table-product-records">
+				<caption class="table-title">Products</caption>
+				<thead class="column-titles">
+					<tr>
+						<th class="column-title name">
+							<button id="btn-sort" class="btn-sort" name="Name">↑↓</button>
+							<span>Name</span>
+						</th>
+						<th class="column-title right-align">
+							<button id="btn-sort" class="btn-sort" name="Price">↑↓</button>
+							<span>Price</span>
+						</th>
+						<th class="column-title">
+							<button id="btn-sort" class="btn-sort" name="Specs">↑↓</button>
+							<span>Specs</span>
+						</th>
+						<th class="column-title">
+							<button id="btn-sort" class="btn-sort" name="SupplierInfo">↑↓</button>
+							<span>SupplierInfo</span>
+						</th>
+						<th class="column-title">
+							<button id="btn-sort" class="btn-sort" name="MadeIn">↑↓</button>
+							<span>Country of origin</span>
+						</th>
+						<th class="column-title">
+							<button id="btn-sort" class="btn-sort" name="ProductionCompanyName">↑↓</button>
+							<span>Prod.company</span>
+						</th>
+						<th class="column-title">
+							<button id="btn-sort" class="btn-sort" name="Rating">↑↓</button>
+							<span>Rating</span>
+						</th>
+						<th class="column-title edit"></th>
+						<th class="column-title delete"></th>
+					</tr>
+				</thead>
+				<tbody id="products-list">
+					
+				</tbody>
+			</table>
+		</section>
+
+
+		<div class="create-menu" id="create-product-menu">
+			<div class="create-menu-block product-create">
+				<h2 id="product-manipulation-title" class="create-title">Create new product</h2>
+				<form class="create-menu-form">
+					<ul class="fields-list">
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Name</span>
+							</div>
+							<div id="input-wrapper-product-menu" class="input-wrapper">
+								<input id="input-product-name" type="text" class="input-field product-menu" placeholder="Enter name" name="Name">
+							</div>	
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Price:</span>
+							</div>
+							<div id="input-wrapper-product-menu" class="input-wrapper">
+								<input id="input-product-price" type="text" class="input-field product-menu input-price" placeholder="Enter price" name="Price">
+								<span>USD</span>	
+							</div>						
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Specs:</span>
+							</div>
+							<div id="input-wrapper-product-menu" class="input-wrapper">
+								<input id="input-product-specs" type="text" class="input-field product-menu" placeholder="Enter product specs" name="Specs">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Rating:</span>
+							</div>
+							<div id="input-wrapper-product-menu" class="input-wrapper">
+								<select id="input-product-rating" name="Rating" class="input-field product-menu">
+									<option value="">Enter rating 1..5</option>
+									<option>1</option>
+									<option>2</option>
+									<option>3</option>
+									<option>4</option>
+									<option>5</option>
+								</select>
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Supplier info:</span>
+							</div>
+							<div id="input-wrapper-product-menu" class="input-wrapper">
+								<input id="input-product-supplier" type="text" class="input-field product-menu" placeholder="Enter supplier info" name="Supplier info">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Made in:</span>
+							</div>
+							<div id="input-wrapper-product-menu" class="input-wrapper">
+								<input id="input-product-country" type="text" class="input-field product-menu" placeholder="Enter origin country" name="Made in">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Production company name:</span>
+							</div>
+							<div id="input-wrapper-product-menu" class="input-wrapper">
+								<input id="input-product-company" type="text" class="input-field product-menu" placeholder="Enter manufacturer name" name="Production company name">
+							</div>
+						</li>
+
+						<li class="field-row">
+							<div class="field-row-title">
+								<span class="required-fields sign">*</span>
+								<span class="required-fields title">Status:</span>
+							</div>
+							<div id="input-wrapper-product-menu" class="input-wrapper">
+								<select id="input-product-status" name="Status" placeholder="Enter status" class="input-field product-menu">
+									<option>OK</option>
+									<option>STORAGE</option>
+									<option>OUT_OF_STOCK</option>
+								</select>
+							</div>
+						</li>
+					</ul>
+				</form>
+				<div class="field-perform-action">
+					<button class="btn-create btn-create-new-store" id="btn-create-new-product">
+						<span>Create</span>
+					</button>
+					<button class="btn-create btn-create-new-store hide" id="btn-edit-product">
+						<span>Save</span>
+					</button>
+					<button class="btn-create btn-cancel-new-store" id="btn-cancel-new-product">
+						<span>Cancel</span>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<footer class="sticky right">
+			<button class="btn-create right" id="btn-create-right">
+				<div class="plus-create">
+				<span>Create</span>
+			</button>
+
+			<button id="btn-delete" class="btn-delete">
+				<div class="bin-delete">
+				<span>Delete</span>
+			</button>
+		</footer>
+	</div>
+	
+</body>
+</html>

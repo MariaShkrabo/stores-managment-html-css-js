@@ -1,0 +1,785 @@
+/**
+ * View class. Knows everything about dom & manipulation and a little bit about data structure, which should be
+ * filled into UI element.
+ *
+ * @constructor
+ */
+export function View(){
+    const OK_STATUS                 = "OK";
+    const STORAGE_STATUS            = "STORAGE";
+    const OUT_OF_STOCK_STATUS       = "OUT_OF_STOCK";
+    const ALL_ICON                  = document.querySelector(".highlighter-product-quantity-all");
+    const OK_ICON                   = document.querySelector("#ok-icon");
+    const STORAGE_ICON              = document.querySelector("#storage-icon");
+    const OUT_OF_STOCK_ICON         = document.querySelector("#sold-icon");
+    let ALL_QUANTITY                = document.querySelector('#all-quantity');
+    let OK_QUANTITY                 = document.querySelector('#ok-quantity');
+    let STORAGE_QUANTITY            = document.querySelector('#storage-quantity');
+    let OUT_OF_STOCK_QUANTITY       = document.querySelector('#sold-quantity');
+
+    const BACKGROUND                = document.querySelector("#background-block");
+    const STORE_CREATION_FORM       = document.querySelector("#create-store-menu");
+
+    const productNameInputField     = document.querySelector("#input-product-name");
+    const productPriceInputField    = document.querySelector("#input-product-price");
+    const productSpecsInputField    = document.querySelector("#input-product-specs");
+    const productRatingInputField   = document.querySelector("#input-product-rating");
+    const productSupplierInputField = document.querySelector("#input-product-supplier");
+    const productCountryInputField  = document.querySelector("#input-product-country");
+    const productCompanyInputField  = document.querySelector("#input-product-company");
+    const productStatusInputField   = document.querySelector("#input-product-status");
+
+    const storeEmail                = document.querySelector('#store-contact-email');
+    const storePhone                = document.querySelector('#store-contact-phone');
+    const storeAddress              = document.querySelector('#store-contact-address');
+    const storeDate                 = document.querySelector('#store-contact-date');
+    const storeArea                 = document.querySelector('#store-contact-area');
+    
+
+    const productForm               = document.querySelector("#create-product-menu");
+
+    let productsList                = document.querySelector("#products-list");
+
+	/**
+	 * Returns a list item with information about the store.
+	 *
+	 * @returns {HTMLLiElement} the li element.
+     * 	 
+	 * @public
+	 */
+    this.getStoresList = function () {
+        return document.querySelectorAll("#shop-info");
+    }
+
+    /**
+	 * Returns a list item with information about the store with an added class that adds an active background to the store.
+	 *
+     * @param {HTMLLiElement} element the name of the store li element.
+     * 
+	 * @returns {HTMLLiElement} the li element with added class.
+     * 	 
+	 * @public
+	 */
+    this.addActiveClass = function (element) {
+        return element.classList.add("active-shop-info");
+    }
+
+    /**
+	 * Returns a list item with the store information removed, which adds the active background to the store.
+	 *
+     * @param {HTMLLiElement} element the name of the store li element.
+     * 
+	 * @returns {HTMLLiElement} the li element with removed class.
+     * 	 
+	 * @public
+	 */
+    this.removeActiveClass = function (element) {
+        return element.classList.remove("active-shop-info");
+    }
+
+    /**
+	 * Returns a block with all information about the store and the list of products.
+     * 
+	 * @returns {HTMLDivElement} the div element.
+     * 	 
+	 * @public
+	 */
+    this.getStoreDetailsBlock = function (){
+        return document.querySelector("#store-details-block");
+    }
+
+    /**
+	 * Returns a block with information that the store is not selected.
+     * 
+	 * @returns {HTMLDivElement} the div element.
+     * 	 
+	 * @public
+	 */
+    this.getPageStub = function (){
+        return document.querySelector("#page-stub");
+    }
+
+    /**
+	 * Returns the element that becomes invisible due to the added class.
+	 *
+     * @param {HTMLElement} element the name of the some html element.
+     * 
+	 * @returns {HTMLElement} the element with added class.
+     * 	 
+	 * @public
+	 */
+    this.hideElement = function (element){
+        return element.classList.add("hide");
+    }
+
+    /**
+	 * Returns the element that becomes visible by the removed class.
+	 *
+     * @param {HTMLElement} element the name of the some html element.
+     * 
+	 * @returns {HTMLElement} the element without class.
+     * 	 
+	 * @public
+	 */
+    this.showElement = function (element){
+        return element.classList.remove("hide");
+    }
+
+    /**
+	 * Returns the value of an attribute of an element.
+	 *
+     * @param {HTMLElement} element the name of the some html element.
+     * @param {string} element the name of the element's attribute.
+     * 
+	 * @returns {string} the element's attribute value.
+     * 	 
+	 * @public
+	 */
+    this.getElementAttribute = function (element, attributeName){
+        return element.getAttribute(attributeName);
+    }
+
+    /**
+	 * Returns the body of the store's grocery table.
+	 *
+	 * @returns {HTMLTbodyElement} the tbody element.
+     * 	 
+	 * @public
+	 */
+    this.getProductsList = function (){
+        return document.querySelector("#products-list");
+    }
+
+    /**
+	 * Returns the store search button.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */
+    this.getSearchButton = function () {
+        return document.querySelector("#btn-search");
+    }
+    
+    /**
+	 * Returns a string - list of stores.
+	 *
+     * @param {Object[]} Stores the array of objects of all stores.
+     * 
+	 * @returns {string} the list of stores.
+     * 	 
+	 * @public
+	 */
+    this.fillStoresList = function (Stores) {
+        var storesList = document.querySelector("#stores-list");
+        let i = 0;
+        storesList.innerHTML += Stores.map(({id, Name, FloorArea, Address}) => {
+            return `
+                <li id="shop-info" class="shop-info" data-shop-id="${i++}" data-shop-server-id="${id}">
+                    <div class="name-area-line">
+                        <span class="shop-name">${Name}</span>
+                        <span class="shop-area">${FloorArea}</span>
+                    </div>
+                    <span align="right" class="square-units">sq.m</span>
+                    <span class="shop-address">${Address}</span>
+                </li>
+            `;
+        }).join("");
+    }
+
+    /**
+	 * Displays store contact information.
+	 *
+     * @param {Object[]} Stores the array of objects of all stores.
+     * @param {number} i the store number in the visible list.
+     * @param {string} establishedDate the converted establish date of the store.
+     * 	 
+	 * @public
+	 */
+    this.displayContactInformation = function(Stores, i, establishedDate) {
+        storeEmail.innerHTML   = "Email: " + Stores[i]["Email"];
+        storePhone.innerHTML   = "Phone Number: " + Stores[i]["PhoneNumber"];
+        storeAddress.innerHTML = "Address: " + Stores[i]["Address"];
+        storeDate.innerHTML    = "Established Date: " + establishedDate;
+        storeArea.innerHTML    = "Floor Area: " + Stores[i]["FloorArea"];
+    }
+
+    /**
+	 * Cleans the body of the table from products.
+     * 	 
+	 * @public
+	 */
+    this.clearProductsList = function (){
+        productsList.innerHTML = "";
+    }
+
+    /**
+	 * Returns a string - table of products.
+	 *
+     * @param {Object[]} Products the array of objects of store product.
+     * 
+	 * @returns {string} the table of stores.
+     * 	 
+	 * @public
+	 */
+    this.fillProductsList = function (Products) {
+        let i = 0;
+        productsList.innerHTML += Products.map((
+            {Name, Price, Specs, SupplierInfo, MadeIn, ProductionCompanyName, Rating, id}) => {
+            return `
+                <tr class="product-record" id="product-record" data-product-id="${i++}" data-product-server-id="${id}">
+                    <td class="product-name">
+                        <span class="characteristic product-name-column">${Name}</span>
+                    </td>
+                    <td class="product-price-column">
+                        <span class="characteristic product-price">
+                        <span class="price-bold">${Price}</span> USD</span>
+                    </td>
+                    <td class="product-specs-column">
+                        <p class="characteristic product-specs" title="${Specs}">${Specs}</p>
+                    </td>
+                    <td class="product-supplier-column">
+                        <p class="characteristic product-supplier" title="${SupplierInfo}">${SupplierInfo}</p>
+                    </td>
+                    <td class="product-country-column">
+                        <span class="characteristic product-country">${MadeIn}</span>
+                    </td>
+                    <td class="product-company-column">
+                        <span class="characteristic product-company">${ProductionCompanyName}</span>
+                    </td>
+                    <td id="product-rating-column" class="product-rating-column" rating-id="${Rating}">
+                        <div class="characteristic product-rating">
+                            <span id="star1"></span>	
+                            <span id="star2"></span>    
+                            <span id="star3"></span>  
+                            <span id="star4"></span>    
+                            <span id="star5"></span>
+                        </div>
+                    </td>
+                    <td class="edit-product" id="edit-product">
+                        <button class="btn-edit-product"></button>
+                    </td>
+                    <td class="delete-product" id="delete-product">
+                        <button class="btn-delete-product">x</button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    /**
+	 * Shows a message in the table that there are no products.
+     * 	 
+	 * @public
+	 */
+    this.setEmptyStoreNotification = function () {
+        productsList.innerHTML += `
+        <tr class="product-record" id="product-record">
+                <td class="product-name">
+                    <span class="characteristic-empty-list">There are no products in this store</span>
+                </td>
+        </tr>
+    `;
+    }
+
+    /**
+	 * Set products rating.
+     * 	 
+	 * @public
+	 */
+    this.setRating = function () {
+        let products = document.querySelectorAll(".product-record");
+        for(let i = 0; i < products.length; i++){
+            let ratingNumber = +products[i].querySelector("#product-rating-column").getAttribute("rating-id");
+            for(let j = 1; j <= 5; j++){
+                products[i].querySelector('#star'+ j).classList.remove("active");
+            }
+            for(let j = 1; j <= ratingNumber; j++){
+                products[i].querySelector('#star' + j).classList.add("active");
+            }
+        }
+    }
+
+    /**
+	 * Counts the number of products with a specific status.
+     * 
+     * @param {Object[]} Products the array of objects of store product.
+     * 	 
+	 * @public
+	 */
+    this.showProductsStatus = function(Products) {
+        ALL_QUANTITY.innerHTML = Products.length;
+        OK_QUANTITY.innerHTML = 0;
+        STORAGE_QUANTITY.innerHTML = 0;
+        OUT_OF_STOCK_QUANTITY.innerHTML = 0;
+    
+        for(let i = 0; i < Products.length; i++){
+            if (Products[i]["Status"] === OK_STATUS){
+                OK_QUANTITY.innerHTML++;
+            } else if (Products[i]["Status"] === STORAGE_STATUS){
+                STORAGE_QUANTITY.innerHTML++;
+            } else if (Products[i]["Status"] === OUT_OF_STOCK_STATUS){
+                OUT_OF_STOCK_QUANTITY.innerHTML++;
+            }
+        }
+    }
+
+    /**
+	 * Returns the string entered in the search box.
+	 *
+	 * @returns {string} input string.
+	 */
+    this.getInputSubstring = function() {
+        const searchInputField = document.querySelector('#store-search-input');
+        return searchInputField.value.trim();
+    }
+
+    /**
+	 * Returns the clear search field button.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */
+    this.getClearButton = function() {
+        return document.querySelector("#btn-clear");
+    }
+
+    /**
+	 * Returns an array of filter icons.
+	 *
+	 * @returns {HTMLElement[]} the filter icons array.
+	 */
+    this.getFilters = function() {
+        return [ALL_ICON, OK_ICON, STORAGE_ICON, OUT_OF_STOCK_ICON];
+    }
+
+     /**
+	 * Shows stores, information about which contains the entered substring.
+	 *
+     * @param {string} inputText entered search string.
+     * @param {HTMLLiElement[]} shopsInfo the list of stores.
+     *  	 
+	 * @public
+	 */
+    this.searchStores = function(inputText, shopsInfo) {
+        if (inputText != ""){
+            for(let i = 0; i < shopsInfo.length; i++){
+                //compare strings by converting them to lowercase and trimming spaces
+                if (shopsInfo[i].innerText.toLowerCase().trim().search(inputText.toLowerCase()) == -1){
+                        shopsInfo[i].classList.remove("show-stores");
+                        shopsInfo[i].classList.add("hide");
+                }
+            }
+        }
+    }
+
+    /**
+	 * Clear the search box and show all stores.
+	 *
+     * @param {HTMLLiElement[]} shopsInfo the list of stores.
+     *  	 
+	 * @public
+	 */
+    this.clearSearch = function(shopsInfo) {
+        const searchInputField = document.querySelector('#store-search-input');
+        searchInputField.value = "";	
+        for(let i = 0; i < shopsInfo.length; i++){
+            shopsInfo[i].classList.add("show-stores");
+        }
+    }
+
+    /**
+	 * Highlights filter icon.
+	 *
+     * @param {HTMLElement[]} filter the filter icon.
+     * 	 
+	 * @public
+	 */
+    this.highlightFilter = function(filter) {
+        filter.classList.remove("highlighter-product-hide");
+    }
+
+    /**
+	 * Removes highlighter from filter icon.
+	 *
+     * @param {HTMLElement[]} filter the filter icon.
+     * 	 
+	 * @public
+	 */
+    this.removeFilterHighlighter = function(filter) {
+        filter.classList.add("highlighter-product-hide");
+    }
+
+    /**
+	 * Returns the name of the selected filter.
+	 *
+     * @param {HTMLElement} productFilter the filter icon that was clicked.
+     * 
+     * @returns {string} the filter icon name.	 
+     * 
+	 * @public
+	 */
+    this.getCurrentStatus = function(productFilter) {
+        let currentStatus = ALL_ICON;
+        if (productFilter === OK_ICON){
+            currentStatus = "OK";
+        } else if (productFilter === STORAGE_ICON){
+            currentStatus = "STORAGE";
+        } else if (productFilter === OUT_OF_STOCK_ICON){
+            currentStatus = "OUT_OF_STOCK";
+        }
+        return currentStatus;
+    }
+
+    /**
+	 * Returns the button to open the store creation form.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */
+    this.getStoreCreationFormButton = function(){
+        return document.querySelector("#btn-create");
+    }
+
+    /**
+	 * Display store creation form.
+	 *
+	 * @public
+	 */
+    this.getStoreCreationForm = function() {
+        BACKGROUND.classList.add("show-menu-create");
+        STORE_CREATION_FORM.classList.add("show-menu-create");
+    }
+
+    /**
+	 * Returns the button to open the product creation form.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */
+    this.getProductCreationFormButton = function () {
+        return document.querySelector("#btn-create-right");
+    }
+
+    /**
+	 * Display product creation form.
+	 *
+	 * @public
+	 */
+    this.getProductCreationForm = function () {
+        this.clearProductsInputFields();
+        document.querySelector("#product-manipulation-title").innerHTML = "Create new product";
+        BACKGROUND.classList.add("show-menu-create");
+        productForm.classList.add("show-menu-create");
+        document.querySelector("#btn-edit-product").classList.add("hide");
+        document.querySelector("#btn-create-new-product").classList.remove("hide");
+    }
+
+    /**
+	 * Clear fields for entering information.
+	 *
+	 * @public
+	 */
+    this.clearProductsInputFields = function () {
+        productNameInputField.value     = "";
+        productPriceInputField.value    = "";
+        productSpecsInputField.value    = "";
+        productRatingInputField.value   = "";
+        productSupplierInputField.value = "";
+        productCountryInputField.value  = "";
+        productCompanyInputField.value  = "";
+        productStatusInputField.value   = "";
+    }
+
+    /**
+	 * Returns the button to cancel the product creation form.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */
+    this.getCancelProductCreationFormButton = function() {
+        return document.querySelector("#btn-cancel-new-product");
+    }
+
+    /**
+	 * Closes the product creation form.
+	 *
+	 * @public
+	 */
+    this.cancelProductCreationForm = function () {
+        BACKGROUND.classList.remove("show-menu-create");
+        productForm.classList.remove("show-menu-create");
+    }
+
+    /**
+	 * Returns the button to create a product.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */
+    this.getStoreCreationButton = function () {
+        return document.querySelector("#btn-create-new-store");
+    }
+
+    /**
+	 * Returns input fields with new store information.
+	 *
+	 * @returns {HTMLInputElement[]} the input elements.
+	 */
+    this.getInputStoreFields = function () {
+        return document.querySelectorAll(".input-field.store-menu");
+    }
+
+    /**
+	 * Returns wrappers for store input fields that show an error message.
+	 *
+	 * @returns {HTMLInputElement[]} the input elements.
+	 */
+    this.getInputStoreWrappers = function () {
+        return document.querySelectorAll("#input-wrapper-store-menu");
+    }
+
+    /**
+	 * Returns input fields with new product information.
+	 *
+	 * @returns {HTMLInputElement[]} the input elements.
+	 */
+    this.getInputProductFields = function () {
+        return document.querySelectorAll(".input-field.product-menu");
+    }
+
+    /**
+	 * Returns wrappers for product input fields that show any error message.
+	 *
+	 * @returns {HTMLInputElement[]} the input elements.
+	 */
+    this.getInputProductWrappers = function () {
+        return document.querySelectorAll("#input-wrapper-product-menu");
+    }
+
+    /**
+	 * Returns store data.
+	 *
+	 * @returns {Object} the store data.
+	 */
+    this.getStoreData = function () {
+        return {
+            Name: document.querySelector("#input-store-name").value,
+            Email: document.querySelector("#input-store-email").value,
+            PhoneNumber: document.querySelector("#input-store-phone").value,
+            Address: document.querySelector("#input-store-address").value,
+            Established: document.querySelector("#input-store-date").value,
+            FloorArea: +document.querySelector("#input-store-floor").value,
+        }
+    }
+
+    /**
+	 * Clears the store list.
+	 *
+	 * @public
+	 */
+    this.clearStoresList = function () {
+        let storesList        = document.querySelector("#stores-list");
+        let storeDetailsBlock = this.getStoreDetailsBlock();
+        let pageStub          = this.getPageStub();
+        storesList.innerHTML  = "";
+        storeDetailsBlock.classList.remove("show-products");
+        pageStub.classList.remove("hide");
+    }
+
+    /**
+	 * Closes the store creation form.
+	 *
+	 * @public
+	 */
+    this.cancelFormCreate = function () {
+        BACKGROUND.classList.remove("show-menu-create");
+        STORE_CREATION_FORM.classList.remove("show-menu-create");
+    }
+
+    /**
+	 * Returns the creation new product button.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */
+    this.getProductCreationButton = function () {
+        return document.querySelector("#btn-create-new-product");
+    }
+
+    /**
+	 * Returns product data.
+     * 
+     * @param {number} currentStoreId the store number in the visible list.
+	 *
+	 * @returns {Object} the product data.
+	 */
+    this.getProductData = function (currentStoreId) {
+        return {
+            Name: productNameInputField.value,
+            Price: +productPriceInputField.value,
+            Specs: productSpecsInputField.value,
+            Rating: +productRatingInputField.value,
+            SupplierInfo: productSupplierInputField.value,
+            MadeIn: productCountryInputField.value,
+            ProductionCompanyName: productCompanyInputField.value,
+            Status: productStatusInputField.value,
+            StoreId: +currentStoreId,
+        };
+    }
+
+    /**
+	 * Returns a button to remove the store.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */    
+    this.getDeleteStoreButton = function () {
+        return document.querySelector("#btn-delete");
+    }
+
+    /**
+	 * Returns buttons to remove products.
+	 *
+	 * @returns {HTMLButtonElement[]} the button element.
+	 */
+    this.getSortButtons = function () {
+        return document.querySelectorAll("#btn-sort");
+    }
+
+    /**
+	 * Changes the symbol of the clicked sort button.
+     * 
+     * @param {HTMLButtonElement} sortButton the button element.
+     * @param {string} buttonSymbol button text.
+	 *
+	 * @public
+	 */
+    this.changeSortButton = function (sortButton, buttonSymbol){
+        sortButton.innerHTML = buttonSymbol;
+    }
+
+    /**
+	 * Resets the sort character to its original.
+	 *
+     * @param {HTMLButtonElement} button the button element.
+     * 
+	 * @public
+	 */
+    this.resetSorting = function(button){
+        button.innerHTML = "↑↓";
+    }
+  
+    this.getRecord = function (clickedElement) {
+        return clickedElement.closest("#product-record");
+    }
+
+    /**
+	 * Returns the result of a comparison to determine which button was clicked.
+	 *
+     * @param {HTMLButtonElement} clickedElement the button element.
+     * @param {string} clickedElementClass class name.
+     * 
+     * @returns {boolean} comparison result.
+     * 
+	 * @public
+	 */    
+    this.getClickedButton = function (clickedElement, clickedElementClass){
+        return clickedElement.className === clickedElementClass;
+    }
+
+    /**
+	 * Displays information about the product selected for editing on the form.
+	 *
+     * @param {Object[]} Products the array of objects of store product.
+     * @param {number} productIndex selected product number in the visible list.
+     * 
+	 * @public
+	 */
+    this.showFormEditProduct = function (Products, productIndex) {
+        document.querySelector("#product-manipulation-title").innerHTML = "Edit product";
+        document.querySelector("#btn-edit-product").classList.remove("hide");
+        document.querySelector("#btn-create-new-product").classList.add("hide");
+    
+        productNameInputField.value     = Products[productIndex]["Name"];
+        productPriceInputField.value    = Products[productIndex]["Price"];
+        productSpecsInputField.value    = Products[productIndex]["Specs"];
+        productRatingInputField.value   = Products[productIndex]["Rating"];
+        productSupplierInputField.value = Products[productIndex]["SupplierInfo"];
+        productCountryInputField.value  = Products[productIndex]["MadeIn"];
+        productCompanyInputField.value  = Products[productIndex]["ProductionCompanyName"];
+        productStatusInputField.value   = Products[productIndex]["Status"];
+    
+        BACKGROUND.classList.add("show-menu-create");
+        productForm.classList.add("show-menu-create");
+    }
+
+    /**
+	 * Returns edit new product button.
+	 *
+	 * @returns {HTMLButtonElement} the button element.
+	 */
+    this.getEditButtons = function() {
+        return document.querySelectorAll("#btn-edit-product");
+    }
+
+    /**
+	 * Returns edited product data.
+     * 
+     * @param {number} currentStoreId the store number in the visible list.
+     * @param {number} productID the product id.
+	 *
+	 * @returns {Object} the product data.
+	 */    
+    this.getEditedProductData = function(currentStoreId, productID) {
+        return {
+            Name: productNameInputField.value,
+            Price: +productPriceInputField.value,
+            Specs: productSpecsInputField.value,
+            Rating: +productRatingInputField.value,
+            SupplierInfo: productSupplierInputField.value,
+            MadeIn: productCountryInputField.value,
+            ProductionCompanyName: productCompanyInputField.value,
+            Status: productStatusInputField.value,
+            StoreId: +currentStoreId,
+            id: +productID,
+        };
+    }
+
+    /**
+	 * Handles errors.
+	 *
+     * @param {HTMLInputElement[]} inputFields fields for entering characteristics.
+     * @param {HTMLDivElement[]} inputWrappers wrappers for input fields to show errors.
+     * 
+	 * @returns {boolean} true - there was an error, otherwise it was not.
+	 *
+	 * @public
+	 */
+    this.errorHandle = function (inputFields, inputWrappers){
+        let error = false;
+        let fieldValue, fieldName;
+        
+        for(let i = 0; i < inputFields.length; i++){
+            fieldValue = inputFields[i].value;
+            fieldName = inputFields[i].getAttribute("name");
+            try {
+                if(fieldValue == "") {
+                    throw `${fieldName} is empty`;
+                }
+        
+                if(isNaN(fieldValue) && (fieldName === "Phone" || fieldName === "Floor" || fieldName === "Price")){
+                    throw `${fieldName} is not a number`;
+                }
+        
+                if(fieldName === "Phone" && fieldValue.length != 7){
+                    throw `${fieldName} is not correct`;
+                }
+        
+                if(Number(fieldValue) <= 0 && (fieldName === "Phone" || fieldName === "Floor" || fieldName === "Price")){
+                    throw `${fieldName} must be a positive number not equal to zero`;
+                }
+        
+                inputWrappers[i].dataset.validationMessage = "";
+                inputWrappers[i].classList.remove("validation-error");
+            } catch(err) {
+                inputWrappers[i].dataset.validationMessage = err;
+                inputWrappers[i].classList.add("validation-error");
+                error = true;
+            }
+        }
+            return error;
+    }
+    
+}

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controller.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controller.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {Model} from "./model.js";
+import {View} from "./view.js";
+
+/**
+ * Controller class. Orchestrates the model and view objects. A "glue" between them.
+ *
+ * @param {View} view view instance.
+ * @param {Model} model model instance.
+ *
+ * @constructor
+ */
+function Controller(view, model){
+    /**
+	 * Selected filter that takes one of four values(ALL, OK, STORAGE, OUT OF STOCK).
+	 * @type {string}
+	 */
+	let currentStatus;
+    /**
+	 * Selected store number in the visible list.
+	 * @type {number}
+	 */
+    let currentStoreIndex;
+    /**
+	 * Selected store id.
+	 * @type {number}
+	 */
+    let currentStoreId;
+    /**
+	 * Selected product ID for deletion or editing.
+	 * @type {number}
+	 */
+    let productID;
+    /**
+	 * The number of clicks on the sort button to know in which direction to sort (descending, ascending, leave as it was).
+	 * @type {number}
+	 */
+    let countClickSortButton   = 0;
+    /**
+	 * Four filter values.
+     * @constant
+	 * @type {string[]}
+	 */
+    const productStatusFilters = view.getFilters();
+	/**
+	 * Initialize controller.
+	 *
+	 * @public
+	 */
+    this.init = async function () {
+        var Stores = await model.getStores();
+        view.fillStoresList(Stores);
+
+        let shopsInfo                         = view.getStoresList();
+        let productsList                      = view.getProductsList();
+        const searchButton                    = view.getSearchButton();
+        const clearButton                     = view.getClearButton();
+        const showStoreCreationFormButton     = view.getStoreCreationFormButton();
+        const showProductCreationFormButton   = view.getProductCreationFormButton();
+        const cancelProductCreationFormButton = view.getCancelProductCreationFormButton();
+        const createStoreButton               = view.getStoreCreationButton();
+        let createProductButton               = view.getProductCreationButton();
+        const deleteStoreButton               = view.getDeleteStoreButton();
+        let sortButtons                       = view.getSortButtons();
+        let editButtons                       = view.getEditButtons();
+
+        shopsInfo.forEach((shopInfo) => shopInfo.addEventListener("click", this._onStoreClick));
+        searchButton.addEventListener("click", this._searchSubstringClick);
+        clearButton.addEventListener("click", this._clearSearch);
+        productStatusFilters.forEach(productFilter => productFilter.addEventListener("click", this._onFilterClick));
+        showStoreCreationFormButton.addEventListener("click", this._showFormCreateStoreClick);
+        showProductCreationFormButton.addEventListener("click", this._showFormCreateProductClick);
+        cancelProductCreationFormButton.addEventListener("click", this._cancelFormCreateProductClick);
+        createStoreButton.addEventListener("click", this._createStoreClick);
+        createProductButton.addEventListener("click", this._createProductClick);
+        deleteStoreButton.addEventListener("click", this._deleteStoreFromList);
+        sortButtons.forEach((sortButton) => sortButton.addEventListener("click", this._sortProducts));
+        productsList.addEventListener("click", this._deleteProductFromListClick);
+        productsList.addEventListener("click", this._showFormEditProductClick);
+        editButtons.forEach((editButton) => editButton.addEventListener("click", this._SaveProductClick));
+	};
+
+    /**
+	 * Store click event handler.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._onStoreClick = async function () {
+        let Stores = await model.getStores();
+
+        let shopsInfo = view.getStoresList();
+        let storeDetailsBlock = view.getStoreDetailsBlock();
+        let pageStub = view.getPageStub();
+
+        productStatusFilters.forEach(productFilter => view.removeFilterHighlighter(productFilter));
+        view.highlightFilter(productStatusFilters[0]);
+
+        shopsInfo.forEach(shopInfo => view.removeActiveClass(shopInfo));
+        view.addActiveClass(this);
+        view.showElement(storeDetailsBlock);
+        view.hideElement(pageStub);
+        currentStoreIndex   = +view.getElementAttribute(this, "data-shop-id");     
+        currentStoreId      = +view.getElementAttribute(this, "data-shop-server-id");
+        let establishedDate = model.convertDate(Stores[currentStoreIndex]["Established"]);
+
+        view.displayContactInformation(Stores, currentStoreIndex, establishedDate);
+
+        let Products = await model.getProducts(currentStoreId);
+        view.clearProductsList();
+        view.showProductsStatus(Products);
+        view.fillProductsList(Products);
+        if (Products.length != 0){	
+            view.setRating();
+        }
+        else{
+            view.setEmptyStoreNotification();
+        }
+    };
+
+    /**
+	 * Event handler for clicking on the store search button.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._searchSubstringClick = function () {
+        let shopsInfo = view.getStoresList();
+        let inputText = view.getInputSubstring();
+        view.searchStores(inputText, shopsInfo);
+    }
+
+    /**
+	 * Event handler for clicking on the button to clear the search field.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._clearSearch = function () {
+        let shopsInfo = view.getStoresList();
+        view.clearSearch(shopsInfo);
+    }
+
+    /**
+	 * Filter click event handler.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._onFilterClick = async function () {
+        productStatusFilters.forEach(productFilter => view.removeFilterHighlighter(productFilter));
+        view.highlightFilter(this);
+        if (this != productStatusFilters[0]){
+            currentStatus = view.getCurrentStatus(this);
+            var Products = await model.getFilteredProducts(currentStoreId, currentStatus);
+        }
+        else{
+            var Products = await model.getProducts(currentStoreId);
+        }
+        view.clearProductsList();
+        view.fillProductsList(Products);
+        if (Products.length != 0){	
+            view.setRating();
+        }
+        else{
+            view.setEmptyStoreNotification();
+        }
+        Products = await model.getProducts(currentStoreId);
+    }
+
+    /**
+	 * The event handler for clicking on the button to create a new store, which opens a form for filling in information about a new store.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._showFormCreateStoreClick = function () {
+        view.getStoreCreationForm();
+    }
+
+    /**
+	 * The event handler for clicking on the button to create a new product, which opens a form for filling in information about a new product.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._showFormCreateProductClick = function () {
+        view.getProductCreationForm();
+    }
+
+    /**
+	 * The event handler for clicking on the button to cancel a new product form.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._cancelFormCreateProductClick = function () {
+        view.cancelProductCreationForm();
+    }
+
+    /**
+	 * Event handler for clicking on the button to create a new store on the form.
+	 *
+	 * @listens click
+	 *
+	 * @param {Event} event the DOM event object.
+	 *
+	 * @private
+	 */
+    this._createStoreClick = function (event) {
+        let inputFields   = view.getInputStoreFields();
+        let inputWrappers = view.getInputStoreWrappers();
+        event.preventDefault();
+        const data = view.getStoreData();
+        console.log(typeof data);
+
+        if (!view.errorHandle(inputFields, inputWrappers)){
+            model.createStore(data).then(async () => {
+                let Stores = await model.getStores();
+                view.clearStoresList();
+                view.cancelFormCreate();
+                view.fillStoresList(Stores)
+            })
+            location.reload();
+        }
+    }
+
+    /**
+	 * Event handler for clicking on the button to create a new product on the form.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._createProductClick = function () {
+        let inputFields   = view.getInputProductFields();
+        let inputWrappers = view.getInputProductWrappers();
+        const data = view.getProductData(currentStoreId);
+
+        if (!view.errorHandle(inputFields, inputWrappers)){
+            model.createProduct(data).then(async () => {
+                let Products = await model.getProducts(currentStoreId);
+                view.clearProductsList();
+                view.showProductsStatus(Products);
+                view.fillProductsList(Products);
+                if (Products.length != 0){	
+                    view.setRating();
+                }
+                else{
+                    view.setEmptyStoreNotification();
+                }
+                view.cancelProductCreationForm();
+            })
+        }
+    }
+
+    /**
+	 * Event handler for clicking on the delete button for the selected store.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._deleteStoreFromList = async function () {
+        let Stores = await model.getStores();
+        let deletedStoreName = Stores[currentStoreIndex]["Name"];
+        if (confirm(`Are you sure you want to delete the "${deletedStoreName}" store ?`)) {	
+            model.deleteStore(currentStoreId).then(async () => {
+                Stores = await model.getStores();
+                view.clearStoresList();
+                view.fillStoresList(Stores);
+            });	
+            alert(`The "${deletedStoreName}" store has been deleted.`);
+            location.reload();
+        }
+    }
+
+    /**
+	 * Sort button click event handler.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._sortProducts = async function () {
+        let sortButtons = view.getSortButtons();
+        countClickSortButton++;
+        if (countClickSortButton === 1){
+            sortButtons.forEach((sortButton) => view.resetSorting(sortButton));
+            view.changeSortButton(this, "↓");
+            var Products = await model.sortProducts(currentStoreId, view.getElementAttribute(this, "name"), "ASC");
+        } else if (countClickSortButton === 2){
+            sortButtons.forEach((sortButton) => view.resetSorting(sortButton));
+            view.changeSortButton(this, "↑");
+            var Products = await model.sortProducts(currentStoreId, view.getElementAttribute(this, "name"), "DESC");
+        } else if (countClickSortButton === 3){
+            view.changeSortButton(this, "↑↓");
+            countClickSortButton = 0;
+            var Products = await model.getProducts(currentStoreId);
+        }
+        view.clearProductsList();
+        view.showProductsStatus(Products);
+        view.fillProductsList(Products);
+        if (Products.length != 0){	
+            view.setRating();
+        }
+        else{
+            view.setEmptyStoreNotification();
+        }
+    }
+
+    /**
+	 * Event handler for clicking on the delete button for the selected product.
+	 *
+	 * @listens click
+	 *
+	 * @param {Event} e the DOM event object.
+	 *
+	 * @private
+	 */
+    this._deleteProductFromListClick = async function (e) {
+        var Products = await model.getProducts(currentStoreId);
+
+        let deletedProduct = view.getRecord(e.target);
+        let productID = view.getElementAttribute(deletedProduct, "data-product-server-id");
+        let productIndex = view.getElementAttribute(deletedProduct, "data-product-id");
+    
+        let deletedProductName = Products[productIndex]["Name"]; 
+
+        if (view.getClickedButton(e.target, "btn-delete-product") &amp;&amp; confirm(`Are you sure you want to delete the "${deletedProductName}" product?`)){	
+            model.deleteProduct(productID).then(async () => {
+                Products = await model.getProducts(currentStoreId);
+
+                view.clearProductsList();
+                view.showProductsStatus(Products);
+                view.fillProductsList(Products);
+                if (Products.length != 0){	
+                    view.setRating();
+                }
+                else{
+                    view.setEmptyStoreNotification();
+                }
+            });
+            alert(`The "${deletedProductName}" product has been deleted.`);
+        }
+    }
+
+    /**
+	 * Event handler for clicking on the product edit button.
+	 *
+	 * @listens click
+	 *
+	 * @param {Event} e the DOM event object.
+	 *
+	 * @private
+	 */
+    this._showFormEditProductClick = async function (e) {
+        if (view.getClickedButton(e.target, "btn-edit-product")){
+            let editedProduct = view.getRecord(e.target);
+            let productIndex  = view.getElementAttribute(editedProduct, "data-product-id");
+            productID         = view.getElementAttribute(editedProduct, "data-product-server-id");
+            let Products      = await model.getProducts(currentStoreId);
+            view.showFormEditProduct(Products, productIndex);
+        }
+    }
+
+    /**
+	 * The event handler for clicking the save button for the edited product.
+	 *
+	 * @listens click
+	 *
+	 * @private
+	 */
+    this._SaveProductClick = function () {
+        let inputFields   = view.getInputProductFields();
+        let inputWrappers = view.getInputProductWrappers();
+        const data        = view.getEditedProductData(currentStoreId, productID);  
+        if (!view.errorHandle(inputFields, inputWrappers)){
+            model.editProduct(data).then(async () => {
+                let Products = await model.getProducts(currentStoreId);
+                view.clearProductsList();
+                view.showProductsStatus(Products);
+                view.fillProductsList(Products);
+                if (Products.length != 0){	
+                    view.setRating();
+                }
+                else{
+                    view.setEmptyStoreNotification();
+                }
+                view.cancelProductCreationForm(); 
+            })
+        }   
+    }
+
+}
+
+(new Controller(new View(), new Model())).init();</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Controller.html">Controller</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Sat Sep 18 2021 22:11:04 GMT+0300 (Москва, стандартное время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
